@@ -10,7 +10,7 @@ dist/
 *.tab.c
 *.tab.h
 lex.yy.c
-sql-compilateur
+sql-parser
 
 # Editor directories and files
 .idea

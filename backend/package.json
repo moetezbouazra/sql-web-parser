@@ -1,7 +1,7 @@
 {
-  "name": "sql-compilateur-backend",
+  "name": "sql-parser-backend",
   "version": "1.0.0",
-  "description": "Serveur backend pour le compilateur SQL",
+  "description": "Serveur backend pour le parseur SQL",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

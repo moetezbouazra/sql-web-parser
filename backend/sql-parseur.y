@@ -8,11 +8,26 @@ int column_count = 0;
 int value_count = 0;
 char output_buffer[4096] = "";
 
+// Variables pour suivre la position dans le fichier
+extern int yylineno;  // Ligne actuelle (fourni par flex/lex avec l'option %option yylineno)
+extern int yycolumn;  // Colonne actuelle (à définir et mettre à jour dans le lexer)
+extern char *yytext;  // Texte du token actuel
+
+// Positions pour l'erreur
+int error_line = 0;
+int error_column = 0;
+
 int yylex(void);
 int yyerror(const char *s);
 
 void append_output(const char *str) {
     strcat(output_buffer, str);
+}
+
+// Fonction pour enregistrer la position de l'erreur
+void save_error_position() {
+    error_line = yylineno;
+    error_column = yycolumn;
 }
 
 %}
@@ -79,11 +94,19 @@ S : ST1 ';' {
 
 ST1 : SELECT colonne FROM table_expr ST2
     | SELECT error { 
-        append_output("Erreur: Syntaxe incorrecte dans la liste des colonnes après SELECT. Vérifiez noms de colonnes, virgules et fonctions.\n"); 
+        save_error_position();
+        char err_msg[200];
+        sprintf(err_msg, "Erreur à la ligne %d, colonne %d: Syntaxe incorrecte dans la liste des colonnes après SELECT. Vérifiez noms de colonnes, virgules et fonctions.\n", 
+                error_line, error_column);
+        append_output(err_msg);
         erreur_detectee = 1; 
     }
     | SELECT colonne FROM error { 
-        append_output("Erreur: Nom de table incorrect ou manquant après FROM. Vérifiez l'orthographe des tables.\n"); 
+        save_error_position();
+        char err_msg[200];
+        sprintf(err_msg, "Erreur à la ligne %d, colonne %d: Nom de table incorrect ou manquant après FROM. Vérifiez l'orthographe des tables.\n", 
+                error_line, error_column);
+        append_output(err_msg);
         erreur_detectee = 1; 
     }
     ;
@@ -95,8 +118,12 @@ table_expr : table_with_alias
 join_clause : join_type alias_table ON join_condition
             | join_clause join_type alias_table ON join_condition
             | error {
+                save_error_position();
+                char err_msg[200];
+                sprintf(err_msg, "Erreur à la ligne %d, colonne %d: Clause JOIN mal formée. Assurez-vous d'utiliser la syntaxe: [INNER/LEFT/RIGHT/FULL] JOIN table ON condition\n", 
+                        error_line, error_column);
+                append_output(err_msg);
                 erreur_detectee = 1;
-                append_output("Erreur: Clause JOIN mal formée. Assurez-vous d'utiliser la syntaxe: [INNER/LEFT/RIGHT/FULL] JOIN table ON condition\n");
               }
             ;
 
@@ -111,8 +138,12 @@ join_type : INNER JOIN
           | FULL JOIN
           | JOIN
           | error JOIN {
+              save_error_position();
+              char err_msg[200];
+              sprintf(err_msg, "Erreur à la ligne %d, colonne %d: Type de JOIN invalide. Utilisez INNER, LEFT, RIGHT, FULL ou aucun qualificateur avant JOIN.\n", 
+                      error_line, error_column);
+              append_output(err_msg);
               erreur_detectee = 1;
-              append_output("Erreur: Type de JOIN invalide. Utilisez INNER, LEFT, RIGHT, FULL ou aucun qualificateur avant JOIN.\n");
             }
           ;
 
@@ -124,7 +155,11 @@ join_condition : ID '.' ID EQ ID '.' ID
                | ID EQ NUM
                | COND
                | error {
-                   append_output("Erreur: Condition de jointure incorrecte après ON. Format attendu: table1.colonne = table2.colonne\n");
+                   save_error_position();
+                   char err_msg[200];
+                   sprintf(err_msg, "Erreur à la ligne %d, colonne %d: Condition de jointure incorrecte après ON. Format attendu: table1.colonne = table2.colonne\n", 
+                           error_line, error_column);
+                   append_output(err_msg);
                    erreur_detectee = 1;
                }
                ;
@@ -171,7 +206,11 @@ table_with_alias : table
 
 ST2 : WHERE COND ST3
     | WHERE error {
-        append_output("Erreur: Condition WHERE incorrecte ou manquante. Vérifiez la syntaxe des conditions (colonne = valeur, etc.)\n"); 
+        save_error_position();
+        char err_msg[200];
+        sprintf(err_msg, "Erreur à la ligne %d, colonne %d: Condition WHERE incorrecte ou manquante. Vérifiez la syntaxe des conditions (colonne = valeur, etc.)\n", 
+                error_line, error_column);
+        append_output(err_msg);
         erreur_detectee = 1;
     }
     | ST3
@@ -179,7 +218,11 @@ ST2 : WHERE COND ST3
 
 ST3 : GROUP BY grouplist ST4
     | GROUP error {
-        append_output("Erreur: Syntaxe GROUP BY incorrecte. Assurez-vous d'utiliser 'GROUP BY nom_colonne'\n"); 
+        save_error_position();
+        char err_msg[200];
+        sprintf(err_msg, "Erreur à la ligne %d, colonne %d: Syntaxe GROUP BY incorrecte. Assurez-vous d'utiliser 'GROUP BY nom_colonne'\n", 
+                error_line, error_column);
+        append_output(err_msg);
         erreur_detectee = 1;
     }
     | ST4
@@ -191,7 +234,11 @@ grouplist : grouplist ',' ID
 
 ST4 : HAVING COND ST5
     | HAVING error {
-        append_output("Erreur: Condition HAVING incorrecte. Vérifiez la syntaxe des conditions après HAVING.\n"); 
+        save_error_position();
+        char err_msg[200];
+        sprintf(err_msg, "Erreur à la ligne %d, colonne %d: Condition HAVING incorrecte. Vérifiez la syntaxe des conditions après HAVING.\n", 
+                error_line, error_column);
+        append_output(err_msg);
         erreur_detectee = 1;
     }
     | ST5
@@ -199,7 +246,11 @@ ST4 : HAVING COND ST5
 
 ST5 : ORDER BY orderlist 
     | ORDER error {
-        append_output("Erreur: Syntaxe ORDER BY incorrecte. Format attendu: ORDER BY colonne [ASC|DESC]\n"); 
+        save_error_position();
+        char err_msg[200];
+        sprintf(err_msg, "Erreur à la ligne %d, colonne %d: Syntaxe ORDER BY incorrecte. Format attendu: ORDER BY colonne [ASC|DESC]\n", 
+                error_line, error_column);
+        append_output(err_msg);
         erreur_detectee = 1;
     }
     | 
@@ -225,16 +276,28 @@ ST7 : DELETE FROM ID WHERE COND {
         }
       }
     | DELETE FROM error {
+        save_error_position();
+        char err_msg[200];
+        sprintf(err_msg, "Erreur à la ligne %d, colonne %d: Nom de table manquant ou invalide après le mot clé 'FROM'\n", 
+                error_line, error_column);
+        append_output(err_msg);
         erreur_detectee = 1;
-        append_output("Erreur: Nom de table manquant ou invalide après le mot clé 'FROM'\n");
       }
     | DELETE error {
+        save_error_position();
+        char err_msg[200];
+        sprintf(err_msg, "Erreur à la ligne %d, colonne %d: Mot-clé 'FROM' manquant dans la requête DELETE. Syntaxe: DELETE FROM table [WHERE condition]\n", 
+                error_line, error_column);
+        append_output(err_msg);
         erreur_detectee = 1;
-        append_output("Erreur: Mot-clé 'FROM' manquant dans la requête DELETE. Syntaxe: DELETE FROM table [WHERE condition]\n");
       }
     | DELETE FROM ID WHERE error {
+        save_error_position();
+        char err_msg[200];
+        sprintf(err_msg, "Erreur à la ligne %d, colonne %d: Condition WHERE invalide dans la requête DELETE. Vérifiez la syntaxe: colonne = valeur\n", 
+                error_line, error_column);
+        append_output(err_msg);
         erreur_detectee = 1;
-        append_output("Erreur: Condition WHERE invalide dans la requête DELETE. Vérifiez la syntaxe: colonne = valeur\n");
       }
     ;
 
@@ -244,8 +307,12 @@ ST8 : DROP FROM ID {
         }
       }
     | DROP error {
+        save_error_position();
+        char err_msg[200];
+        sprintf(err_msg, "Erreur à la ligne %d, colonne %d: Syntaxe DROP incorrecte. Format attendu: DROP FROM nom_table\n", 
+                error_line, error_column);
+        append_output(err_msg);
         erreur_detectee = 1;
-        append_output("Erreur: Syntaxe DROP incorrecte. Format attendu: DROP FROM nom_table\n");
       }
     ;
 
@@ -256,11 +323,12 @@ ST9 : INSERT INTO ID VALUES '(' valuelist ')' {
       }
     | INSERT INTO ID '(' columnlist ')' VALUES '(' valuelist ')' {
         if (column_count != value_count) {
+            save_error_position();
+            char err_msg[200];
+            sprintf(err_msg, "Erreur à la ligne %d, colonne %d: Le nombre de colonnes (%d) ne correspond pas au nombre de valeurs (%d). Vérifiez la correspondance.\n", 
+                   error_line, error_column, column_count, value_count);
+            append_output(err_msg);
             erreur_detectee = 1;
-            char error_msg[200];
-            sprintf(error_msg, "Erreur: Le nombre de colonnes (%d) ne correspond pas au nombre de valeurs (%d). Vérifiez la correspondance.\n", 
-                   column_count, value_count);
-            append_output(error_msg);
         } else if (!erreur_detectee) {
             append_output("Requête correcte\n");
         }
@@ -268,26 +336,42 @@ ST9 : INSERT INTO ID VALUES '(' valuelist ')' {
         value_count = 0;
       }
     | INSERT INTO ID '(' columnlist ')' error {
+        save_error_position();
+        char err_msg[200];
+        sprintf(err_msg, "Erreur à la ligne %d, colonne %d: Mot-clé VALUES manquant ou liste de valeurs incorrecte. Syntaxe attendue: ... VALUES (val1, val2, ...)\n", 
+                error_line, error_column);
+        append_output(err_msg);
         erreur_detectee = 1;
-        append_output("Erreur: Mot-clé VALUES manquant ou liste de valeurs incorrecte. Syntaxe attendue: ... VALUES (val1, val2, ...)\n");
         column_count = 0;
         value_count = 0;
       }
     | INSERT INTO ID error {
+        save_error_position();
+        char err_msg[200];
+        sprintf(err_msg, "Erreur à la ligne %d, colonne %d: Mauvaise syntaxe après le nom de la table. Utilisez VALUES (val1, val2) ou (col1, col2) VALUES (val1, val2)\n", 
+                error_line, error_column);
+        append_output(err_msg);
         erreur_detectee = 1;
-        append_output("Erreur: Mauvaise syntaxe après le nom de la table. Utilisez VALUES (val1, val2) ou (col1, col2) VALUES (val1, val2)\n");
         column_count = 0;
         value_count = 0;
       }
     | INSERT INTO error {
+        save_error_position();
+        char err_msg[200];
+        sprintf(err_msg, "Erreur à la ligne %d, colonne %d: Nom de table manquant ou invalide après 'INTO'\n", 
+                error_line, error_column);
+        append_output(err_msg);
         erreur_detectee = 1;
-        append_output("Erreur: Nom de table manquant ou invalide après 'INTO'\n");
         column_count = 0;
         value_count = 0;
       }
     | INSERT error {
+        save_error_position();
+        char err_msg[200];
+        sprintf(err_msg, "Erreur à la ligne %d, colonne %d: Mot-clé 'INTO' manquant. Syntaxe correcte: INSERT INTO table VALUES (...)\n", 
+                error_line, error_column);
+        append_output(err_msg);
         erreur_detectee = 1;
-        append_output("Erreur: Mot-clé 'INTO' manquant. Syntaxe correcte: INSERT INTO table VALUES (...)\n");
         column_count = 0;
         value_count = 0;
       }
@@ -339,6 +423,15 @@ valeur : NUM
 
 /* Error handling function */
 int yyerror(const char *s) {
+    save_error_position();
+    char err_msg[200];
+    
+    if (erreur_detectee) {
+sprintf(err_msg, "Erreur de syntaxe à la ligne %d, colonne %d: %s\n", 
+            error_line, error_column, s);
+    append_output(err_msg);
+    }
+    
     return 1;
 }
 
@@ -352,7 +445,7 @@ int main(int argc, char **argv) {
     if (argc > 1) {
         yyin = fopen(argv[1], "r");
         if (!yyin) {
-            fprintf(stderr, "Cannot open input file: %s\n", argv[1]);
+            fprintf(stderr, "Impossible d'ouvrir le fichier d'entrée: %s\n", argv[1]);
             return 1;
         }
     } else {
@@ -373,4 +466,3 @@ int main(int argc, char **argv) {
     
     return 0;
 }
-

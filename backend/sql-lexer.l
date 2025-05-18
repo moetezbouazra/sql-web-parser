@@ -1,3 +1,5 @@
+%option noyywrap yylineno
+
 %{
 #include <stdio.h>
 #include <string.h>
@@ -5,6 +7,22 @@
 #include "sql-parseur.tab.h"
 
 extern YYSTYPE yylval;
+
+/* Variable pour suivre la position de la colonne */
+int yycolumn = 1;
+
+/* Cette macro est appelée à chaque match pour mettre à jour la position */
+#define YY_USER_ACTION \
+    { \
+        int i; \
+        for (i = 0; i < yyleng; i++) { \
+            if (yytext[i] == '\n') { \
+                yycolumn = 1; \
+            } else { \
+                yycolumn++; \
+            } \
+        } \
+    }
 %}
 
 %%
@@ -76,12 +94,10 @@ extern YYSTYPE yylval;
                   return STRING; 
                 }
 
-[ \t\n\r]      
+[ \t]           { /* ignorer les espaces et tabulations */ }
+\n              { yycolumn = 1; /* reset la colonne sur nouvelle ligne */ }
+\r              { /* ignorer les retours chariot */ }
 
-.               { printf("Caractère non reconnu: '%s' "); }
+.               { printf("Caractère non reconnu: '%c' ", yytext[0]); }
 
 %%
-
-int yywrap(void) {
-    return 1;
-}

@@ -1,7 +1,7 @@
 {
-  "name": "sql-compilateur-frontend",
+  "name": "sql-parser-frontend",
   "version": "1.0.0",
-  "description": "Interface frontend pour le compilateur SQL",
+  "description": "Interface frontend pour le parseur SQL",
   "private": true,
   "type": "module",
   "scripts": {

@@ -1,10 +1,10 @@
-# SQL Compilateur Web
+# SQL Web Parser
 
 Application web complète pour compiler et exécuter des requêtes SQL avec interface interactive.
 
 ## Fonctionnalités
 
-- Compilateur SQL complet avec Lex/Yacc
+- Parseur SQL complet avec Lex/Yacc
 - Interface web moderne avec Vue.js
 - Exécution interactive des requêtes
 - Affichage des résultats sous forme de tableau
@@ -14,5 +14,5 @@ Application web complète pour compiler et exécuter des requêtes SQL avec inte
 
 1. Cloner le dépôt:
 ```bash
-git clone https://github.com/moetezbouazra/sql-compilateur-web.git
-cd sql-compilateur-web
+git clone https://github.com/moetezbouazra/sql-web-parser.git
+cd sql-web-parser

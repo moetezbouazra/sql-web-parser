@@ -1,0 +1,83 @@
+[
+    {
+      "title": "SELECT simple",
+      "query": "SELECT * FROM utilisateurs;"
+    },
+    {
+      "title": "SELECT avec colonnes",
+      "query": "SELECT nom, prenom, email FROM utilisateurs;"
+    },
+    {
+      "title": "SELECT avec colonnes qualifiées",
+      "query": "SELECT u.nom, u.prenom FROM utilisateurs u;"
+    },
+    {
+      "title": "SELECT avec WHERE",
+      "query": "SELECT * FROM produits WHERE prix > 100;"
+    },
+    {
+      "title": "SELECT avec fonction d'agrégation",
+      "query": "SELECT AVG(prix) FROM produits;"
+    },
+    {
+      "title": "SELECT avec GROUP BY",
+      "query": "SELECT categorie, AVG(prix) FROM produits GROUP BY categorie;"
+    },
+    {
+      "title": "SELECT avec HAVING",
+      "query": "SELECT categorie, AVG(prix) FROM produits GROUP BY categorie HAVING AVG(prix) > 50;"
+    },
+    {
+      "title": "SELECT avec ORDER BY",
+      "query": "SELECT * FROM produits ORDER BY prix DESC;"
+    },
+    {
+      "title": "SELECT avec JOIN",
+      "query": "SELECT c.nom, p.nom FROM clients c INNER JOIN commandes p ON c.id = p.client_id;"
+    },
+    {
+      "title": "SELECT avec LEFT JOIN",
+      "query": "SELECT d.nom, e.nom FROM departements d LEFT JOIN employes e ON d.id = e.departement_id;"
+    },
+    {
+      "title": "SELECT avec calcul",
+      "query": "SELECT nom, prix * quantite AS total FROM produits;"
+    },
+    {
+      "title": "INSERT simple",
+      "query": "INSERT INTO produits VALUES (101, \"Ordinateur\", 999, 10);"
+    },
+    {
+      "title": "INSERT avec colonnes",
+      "query": "INSERT INTO produits (id, nom, prix, stock) VALUES (102, \"Clavier\", 49, 20);"
+    },
+    {
+      "title": "DELETE tous",
+      "query": "DELETE FROM produits;"
+    },
+    {
+      "title": "DELETE avec WHERE",
+      "query": "DELETE FROM produits WHERE stock = 0;"
+    },
+    {
+      "title": "DROP table",
+      "query": "DROP FROM produits;"
+    },
+    {
+      "title": "SELECT avec conditions complexes",
+      "query": "SELECT * FROM employes WHERE (salaire > 50000 AND departement = \"IT\") OR (anciennete > 5);"
+    },
+    {
+      "title": "SELECT avec alias de table",
+      "query": "SELECT e.nom, d.nom FROM employes AS e JOIN departements AS d ON e.departement_id = d.id;"
+    },
+    {
+      "title": "SELECT avec fonctions multiples",
+      "query": "SELECT MIN(prix), MAX(prix), AVG(prix) FROM produits;"
+    },
+    {
+      "title": "SELECT avec jointure multiple",
+      "query": "SELECT c.nom, p.nom, f.montant FROM clients c JOIN commandes p ON c.id = p.client_id JOIN factures f ON p.id = f.commande_id;"
+    }
+  ]
+  

@@ -19,10 +19,10 @@ function compileParser() {
             { cwd: path.join(__dirname) }, 
             (error, stdout, stderr) => {
                 if (error) {
-                    console.error('Compilation error:', stderr);
-                    reject(new Error('Parser compilation failed'));
+                    console.error('Parse error:', stderr);
+                    reject(new Error('Parser failed'));
                 } else {
-                    console.log('Parser compiled successfully');
+                    console.log('Parserd successfully');
                     resolve();
                 }
             });
@@ -49,7 +49,7 @@ function executeQuery(query) {
                 } else {
                     // Parse the output (you may need to adjust this based on your parser's output)
                     const result = {
-                        message: stdout.trim() || 'Query executed successfully',
+                        message: stdout.trim() || 'Requette juste',
                     };
                     resolve(result);
                 }

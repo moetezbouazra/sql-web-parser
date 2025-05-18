@@ -4,7 +4,7 @@
       <div class="logo-container">
         <div class="logo">SQL</div>
         <div class="title-container">
-          <h1>Compilateur SQL</h1>
+          <h1>Parseur SQL</h1>
           <p class="sous-titre">Interface d'analyse et d'exécution de requêtes SQL</p>
         </div>
       </div>
@@ -317,10 +317,6 @@ const exemples = [
   {
     title: 'SELECT avec LEFT JOIN',
     query: 'SELECT d.nom, e.nom FROM departements d LEFT JOIN employes e ON d.id = e.departement_id;'
-  },
-  {
-    title: 'SELECT avec calcul',
-    query: 'SELECT nom, prix * quantite AS total FROM produits;'
   },
   {
     title: 'INSERT simple',
